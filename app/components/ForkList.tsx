@@ -10,6 +10,7 @@ export interface ForkItem {
   defaultBranch: string;
   upstreamOwner: string;
   upstreamRepo: string;
+  maintainerLabel: string;
   authorName: string;
   authorEmail: string;
   lastSyncedAt: string | null;
@@ -58,7 +59,7 @@ export default function ForkList({ forks }: { forks: ForkItem[] }) {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remove this fork? The stored PAT will be deleted.")) return;
+    if (!confirm("Remove this fork registration?")) return;
     setBusyId(id);
     try {
       const res = await fetch(`/api/repos/${id}`, { method: "DELETE" });
@@ -72,7 +73,7 @@ export default function ForkList({ forks }: { forks: ForkItem[] }) {
     return (
       <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-700">
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          No forks registered yet. Add one to get started.
+          No forks registered yet. Add a maintainer, then register a fork.
         </p>
       </div>
     );
@@ -100,7 +101,8 @@ export default function ForkList({ forks }: { forks: ForkItem[] }) {
                 {fork.defaultBranch}
               </p>
               <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                commits as: {fork.authorName} &lt;{fork.authorEmail}&gt;
+                maintainer: {fork.maintainerLabel} &middot; commits as:{" "}
+                {fork.authorName} &lt;{fork.authorEmail}&gt;
               </p>
             </div>
             <span

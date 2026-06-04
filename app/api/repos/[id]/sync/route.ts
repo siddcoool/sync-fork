@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/mongo";
 import { Repo } from "@/models/repo";
+import { Maintainer } from "@/models/maintainer";
 import { decrypt } from "@/lib/crypto";
 import {
   createOctokit,
@@ -21,18 +22,27 @@ export async function POST(
 
   await connectToDatabase();
 
-  // patEncrypted has select:false, so request it explicitly.
-  const repo = await Repo.findById(id).select("+patEncrypted");
+  const repo = await Repo.findById(id);
   if (!repo) {
     return NextResponse.json({ error: "Fork not found." }, { status: 404 });
   }
 
+  const maintainer = await Maintainer.findById(repo.maintainerId).select(
+    "+patEncrypted",
+  );
+  if (!maintainer) {
+    return NextResponse.json(
+      { error: "Maintainer not found for this fork." },
+      { status: 404 },
+    );
+  }
+
   let pat: string;
   try {
-    pat = decrypt(repo.patEncrypted);
+    pat = decrypt(maintainer.patEncrypted);
   } catch {
     return NextResponse.json(
-      { error: "Failed to decrypt the stored PAT." },
+      { error: "Failed to decrypt the maintainer PAT." },
       { status: 500 },
     );
   }
@@ -53,8 +63,8 @@ export async function POST(
       defaultBranch: repo.defaultBranch,
       upstreamOwner: repo.upstreamOwner,
       upstreamRepo: repo.upstreamRepo,
-      authorName: repo.authorName,
-      authorEmail: repo.authorEmail,
+      authorName: maintainer.authorName,
+      authorEmail: maintainer.authorEmail,
     });
 
     repo.lastSyncedAt = new Date();

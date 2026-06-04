@@ -10,12 +10,11 @@ const RepoSchema = new Schema(
     upstreamOwner: { type: String, required: true },
     upstreamRepo: { type: String, required: true },
 
-    // AES-256-GCM encrypted fine-grained PAT. Never exposed to the client.
-    patEncrypted: { type: String, required: true, select: false },
-
-    // Identity used for the syncfork.md commit so the fork owner is the latest committer.
-    authorName: { type: String, required: true },
-    authorEmail: { type: String, required: true },
+    maintainerId: {
+      type: Schema.Types.ObjectId,
+      ref: "Maintainer",
+      required: true,
+    },
 
     lastSyncedAt: { type: Date, default: null },
     lastSyncStatus: {

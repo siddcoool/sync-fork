@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/mongo";
 import { Repo } from "@/models/repo";
-import { encrypt } from "@/lib/crypto";
+import { Maintainer } from "@/models/maintainer";
+import { decrypt } from "@/lib/crypto";
 import {
   createOctokit,
   getRepoMeta,
@@ -11,14 +13,15 @@ import {
 
 const createSchema = z.object({
   forkUrl: z.string().min(1, "Fork URL is required."),
-  pat: z.string().min(1, "A fine-grained PAT is required."),
-  authorName: z.string().min(1, "Author name is required."),
-  authorEmail: z.string().email("A valid author email is required."),
+  maintainerId: z.string().min(1, "Select a maintainer."),
 });
 
 export async function GET() {
   await connectToDatabase();
-  const repos = await Repo.find().sort({ createdAt: -1 }).lean();
+  const repos = await Repo.find()
+    .populate("maintainerId", "label authorName authorEmail")
+    .sort({ createdAt: -1 })
+    .lean();
   return NextResponse.json({ repos });
 }
 
@@ -38,7 +41,11 @@ export async function POST(req: Request) {
     );
   }
 
-  const { forkUrl, pat, authorName, authorEmail } = parsed.data;
+  const { forkUrl, maintainerId } = parsed.data;
+
+  if (!mongoose.Types.ObjectId.isValid(maintainerId)) {
+    return NextResponse.json({ error: "Invalid maintainer." }, { status: 400 });
+  }
 
   let owner: string;
   let repo: string;
@@ -51,7 +58,23 @@ export async function POST(req: Request) {
     );
   }
 
-  // Validate the PAT and the repo via GitHub before storing anything.
+  await connectToDatabase();
+
+  const maintainer = await Maintainer.findById(maintainerId).select("+patEncrypted");
+  if (!maintainer) {
+    return NextResponse.json({ error: "Maintainer not found." }, { status: 404 });
+  }
+
+  let pat: string;
+  try {
+    pat = decrypt(maintainer.patEncrypted);
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to decrypt the maintainer PAT." },
+      { status: 500 },
+    );
+  }
+
   let meta;
   try {
     const octokit = createOctokit(pat);
@@ -60,13 +83,16 @@ export async function POST(req: Request) {
     const status = (err as { status?: number })?.status;
     if (status === 401) {
       return NextResponse.json(
-        { error: "The PAT is invalid or expired." },
+        { error: "The maintainer PAT is invalid or expired." },
         { status: 400 },
       );
     }
     if (status === 404) {
       return NextResponse.json(
-        { error: "Repository not found, or the PAT cannot access it." },
+        {
+          error:
+            "Repository not found, or the maintainer PAT cannot access it.",
+        },
         { status: 400 },
       );
     }
@@ -88,8 +114,6 @@ export async function POST(req: Request) {
     );
   }
 
-  await connectToDatabase();
-
   const existing = await Repo.findOne({ owner: meta.owner, repo: meta.repo });
   if (existing) {
     return NextResponse.json(
@@ -104,9 +128,7 @@ export async function POST(req: Request) {
     defaultBranch: meta.defaultBranch,
     upstreamOwner: meta.upstreamOwner,
     upstreamRepo: meta.upstreamRepo,
-    patEncrypted: encrypt(pat),
-    authorName,
-    authorEmail,
+    maintainerId: maintainer._id,
   });
 
   return NextResponse.json({ id: String(created._id) }, { status: 201 });
