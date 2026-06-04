@@ -101,13 +101,13 @@ function RepoRow({
   }
 
   return (
-    <TableRow>
+    <TableRow className="[&>td]:text-center">
       <TableCell className="font-medium">
         <a
           href={`https://github.com/${fork.owner}/${fork.repo}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 hover:underline"
+          className="inline-flex items-center justify-center gap-1 hover:underline"
         >
           {fork.owner}/{fork.repo}
           <ExternalLink className="size-3 text-muted-foreground" />
@@ -129,7 +129,7 @@ function RepoRow({
         {formatDate(fork.lastSyncedAt)}
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-center gap-1">
           <Button size="sm" onClick={handleSync} disabled={busy}>
             {busy ? (
               <Loader2 className="size-3.5 animate-spin" />
@@ -236,14 +236,14 @@ export default function ReposTable({ forks }: { forks: ForkItem[] }) {
       <div className="rounded-xl ring-1 ring-foreground/10">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="[&>th]:text-center">
               <TableHead>Repository</TableHead>
               <TableHead>Upstream</TableHead>
               <TableHead>Branch</TableHead>
               <TableHead>Maintainer</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Last synced</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
