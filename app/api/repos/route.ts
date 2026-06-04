@@ -2,14 +2,15 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/mongo";
-import { Repo } from "@/models/repo";
-import { Maintainer } from "@/models/maintainer";
+import { Maintainer, Repo } from "@/models";
 import { decrypt } from "@/lib/crypto";
 import {
   createOctokit,
   getRepoMeta,
   parseForkUrl,
 } from "@/lib/github";
+
+export const runtime = "nodejs";
 
 const createSchema = z.object({
   forkUrl: z.string().min(1, "Fork URL is required."),

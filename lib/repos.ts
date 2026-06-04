@@ -1,5 +1,5 @@
 import { connectToDatabase } from "@/lib/mongo";
-import { Repo } from "@/models/repo";
+import { Repo } from "@/models";
 
 export type ForkItem = {
   id: string;

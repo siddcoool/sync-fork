@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/mongo";
-import { Repo } from "@/models/repo";
-import { Maintainer } from "@/models/maintainer";
+import { Maintainer, Repo } from "@/models";
 import { decrypt } from "@/lib/crypto";
 import {
   createOctokit,
   mergeUpstream,
   upsertSyncforkFile,
 } from "@/lib/github";
+
+export const runtime = "nodejs";
 
 export async function POST(
   _req: Request,

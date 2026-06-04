@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { connectToDatabase } from "@/lib/mongo";
-import { Maintainer } from "@/models/maintainer";
+import { Maintainer } from "@/models";
 import { encrypt } from "@/lib/crypto";
 import { createOctokit } from "@/lib/github";
+
+export const runtime = "nodejs";
 
 const createSchema = z.object({
   label: z.string().min(1, "A label is required."),

@@ -6,6 +6,7 @@ import PageShell from "@/app/components/PageShell";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export default async function MaintainersPage() {
   const maintainers = await getMaintainers();

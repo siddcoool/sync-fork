@@ -1,5 +1,5 @@
 import { connectToDatabase } from "@/lib/mongo";
-import { Maintainer } from "@/models/maintainer";
+import { Maintainer } from "@/models";
 
 export type MaintainerItem = {
   id: string;

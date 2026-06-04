@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/mongo";
-import { Maintainer } from "@/models/maintainer";
-import { Repo } from "@/models/repo";
+import { Maintainer, Repo } from "@/models";
+
+export const runtime = "nodejs";
 
 export async function DELETE(
   _req: Request,
