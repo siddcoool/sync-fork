@@ -2,6 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,35 +46,41 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-zinc-50 p-4 dark:bg-black">
-      <div className="w-full max-w-sm rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Sync Fork
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Enter the shared password to continue.
-        </p>
-        <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            autoFocus
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-          />
-          {error ? (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          ) : null}
-          <button
-            type="submit"
-            disabled={loading || !password}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
-            {loading ? "Signing in..." : "Sign in"}
-          </button>
-        </form>
-      </div>
+    <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Lock className="size-5 text-muted-foreground" />
+            Sync Fork
+          </CardTitle>
+          <CardDescription>
+            Enter the shared password to continue.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                autoFocus
+              />
+            </div>
+            {error ? (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : null}
+            <Button type="submit" disabled={loading || !password} className="w-full">
+              {loading ? "Signing in..." : "Sign in"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

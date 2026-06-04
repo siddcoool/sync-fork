@@ -2,13 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { User } from "lucide-react";
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import ConfirmDeleteDialog from "@/app/components/ConfirmDeleteDialog";
+import EmptyState from "@/app/components/EmptyState";
 
-export interface MaintainerItem {
-  id: string;
-  label: string;
-  authorName: string;
-  authorEmail: string;
-}
+import type { MaintainerItem } from "@/lib/maintainers";
 
 export default function MaintainerList({
   maintainers,
@@ -20,13 +26,6 @@ export default function MaintainerList({
   const [error, setError] = useState("");
 
   async function handleDelete(id: string) {
-    if (
-      !confirm(
-        "Remove this maintainer? Their PAT will be deleted. Forks using them must be removed first.",
-      )
-    ) {
-      return;
-    }
     setBusyId(id);
     setError("");
     try {
@@ -44,36 +43,49 @@ export default function MaintainerList({
 
   if (maintainers.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-zinc-300 p-12 text-center dark:border-zinc-700">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+      <EmptyState>
+        <p className="text-sm">
           No maintainers yet. Add one to store a reusable PAT and commit identity.
         </p>
-      </div>
+      </EmptyState>
     );
   }
 
   return (
     <>
       {error ? (
-        <p className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       ) : null}
       <ul className="flex flex-col gap-3">
         {maintainers.map((m) => (
-          <li
-            key={m.id}
-            className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950"
-          >
-            <p className="font-medium text-zinc-900 dark:text-zinc-50">{m.label}</p>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              commits as: {m.authorName} &lt;{m.authorEmail}&gt;
-            </p>
-            <button
-              onClick={() => handleDelete(m.id)}
-              disabled={busyId === m.id}
-              className="mt-4 rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
-            >
-              {busyId === m.id ? "Removing..." : "Remove"}
-            </button>
+          <li key={m.id}>
+            <Card className="transition-shadow hover:ring-primary/20 hover:shadow-sm">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <User className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <CardTitle className="truncate">{m.label}</CardTitle>
+                    <CardDescription className="truncate">
+                      commits as: {m.authorName} &lt;{m.authorEmail}&gt;
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardFooter className="border-t-0 bg-transparent pt-0">
+                <ConfirmDeleteDialog
+                  title="Remove maintainer?"
+                  description="Their PAT will be deleted. Remove all forks using this maintainer first."
+                  triggerLabel="Remove"
+                  busy={busyId === m.id}
+                  disabled={busyId === m.id}
+                  onConfirm={() => handleDelete(m.id)}
+                />
+              </CardFooter>
+            </Card>
           </li>
         ))}
       </ul>
